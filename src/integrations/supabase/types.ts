@@ -14,6 +14,54 @@ export type Database = {
   }
   public: {
     Tables: {
+      alert_comments: {
+        Row: {
+          alert_id: string
+          attachments: string[] | null
+          comment_text: string
+          comment_type: Database["public"]["Enums"]["comment_type"]
+          commenter_id: string
+          created_at: string | null
+          id: string
+          is_internal: boolean | null
+        }
+        Insert: {
+          alert_id: string
+          attachments?: string[] | null
+          comment_text: string
+          comment_type: Database["public"]["Enums"]["comment_type"]
+          commenter_id: string
+          created_at?: string | null
+          id?: string
+          is_internal?: boolean | null
+        }
+        Update: {
+          alert_id?: string
+          attachments?: string[] | null
+          comment_text?: string
+          comment_type?: Database["public"]["Enums"]["comment_type"]
+          commenter_id?: string
+          created_at?: string | null
+          id?: string
+          is_internal?: boolean | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "fk_alert_comments_alert_id"
+            columns: ["alert_id"]
+            isOneToOne: false
+            referencedRelation: "pastoral_alerts"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "fk_alert_comments_commenter_id"
+            columns: ["commenter_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       church_settings: {
         Row: {
           church_id: string
@@ -513,6 +561,150 @@ export type Database = {
           },
         ]
       }
+      pastoral_alerts: {
+        Row: {
+          ai_assessment: Json | null
+          ai_generated: boolean | null
+          ai_recommendations: string[] | null
+          alert_subtype: string | null
+          alert_type: Database["public"]["Enums"]["alert_type"]
+          assigned_to: string | null
+          church_id: string
+          confidence_level: number | null
+          created_at: string | null
+          description: string
+          escalation_level: number | null
+          estimated_resolution_time: unknown | null
+          evidence: string | null
+          follow_up_date: string | null
+          follow_up_timeline: string | null
+          id: string
+          language: string | null
+          member_id: string
+          notification_sent: boolean | null
+          notification_sent_at: string | null
+          pastor_email: string | null
+          priority: Database["public"]["Enums"]["alert_priority"]
+          requires_immediate_action: boolean | null
+          resolution_notes: string | null
+          resolution_type: Database["public"]["Enums"]["resolution_type"] | null
+          resolved: boolean | null
+          resolved_at: string | null
+          resolved_by: string | null
+          risk_factors: string[] | null
+          risk_score: number | null
+          satisfaction_rating: number | null
+          status: Database["public"]["Enums"]["alert_status"] | null
+          title: string
+          updated_at: string | null
+        }
+        Insert: {
+          ai_assessment?: Json | null
+          ai_generated?: boolean | null
+          ai_recommendations?: string[] | null
+          alert_subtype?: string | null
+          alert_type: Database["public"]["Enums"]["alert_type"]
+          assigned_to?: string | null
+          church_id: string
+          confidence_level?: number | null
+          created_at?: string | null
+          description: string
+          escalation_level?: number | null
+          estimated_resolution_time?: unknown | null
+          evidence?: string | null
+          follow_up_date?: string | null
+          follow_up_timeline?: string | null
+          id?: string
+          language?: string | null
+          member_id: string
+          notification_sent?: boolean | null
+          notification_sent_at?: string | null
+          pastor_email?: string | null
+          priority: Database["public"]["Enums"]["alert_priority"]
+          requires_immediate_action?: boolean | null
+          resolution_notes?: string | null
+          resolution_type?:
+            | Database["public"]["Enums"]["resolution_type"]
+            | null
+          resolved?: boolean | null
+          resolved_at?: string | null
+          resolved_by?: string | null
+          risk_factors?: string[] | null
+          risk_score?: number | null
+          satisfaction_rating?: number | null
+          status?: Database["public"]["Enums"]["alert_status"] | null
+          title: string
+          updated_at?: string | null
+        }
+        Update: {
+          ai_assessment?: Json | null
+          ai_generated?: boolean | null
+          ai_recommendations?: string[] | null
+          alert_subtype?: string | null
+          alert_type?: Database["public"]["Enums"]["alert_type"]
+          assigned_to?: string | null
+          church_id?: string
+          confidence_level?: number | null
+          created_at?: string | null
+          description?: string
+          escalation_level?: number | null
+          estimated_resolution_time?: unknown | null
+          evidence?: string | null
+          follow_up_date?: string | null
+          follow_up_timeline?: string | null
+          id?: string
+          language?: string | null
+          member_id?: string
+          notification_sent?: boolean | null
+          notification_sent_at?: string | null
+          pastor_email?: string | null
+          priority?: Database["public"]["Enums"]["alert_priority"]
+          requires_immediate_action?: boolean | null
+          resolution_notes?: string | null
+          resolution_type?:
+            | Database["public"]["Enums"]["resolution_type"]
+            | null
+          resolved?: boolean | null
+          resolved_at?: string | null
+          resolved_by?: string | null
+          risk_factors?: string[] | null
+          risk_score?: number | null
+          satisfaction_rating?: number | null
+          status?: Database["public"]["Enums"]["alert_status"] | null
+          title?: string
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "fk_pastoral_alerts_assigned_to"
+            columns: ["assigned_to"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "fk_pastoral_alerts_church_id"
+            columns: ["church_id"]
+            isOneToOne: false
+            referencedRelation: "churches"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "fk_pastoral_alerts_member_id"
+            columns: ["member_id"]
+            isOneToOne: false
+            referencedRelation: "members"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "fk_pastoral_alerts_resolved_by"
+            columns: ["resolved_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       profiles: {
         Row: {
           activity_level: string | null
@@ -700,7 +892,25 @@ export type Database = {
       }
     }
     Enums: {
+      alert_priority: "low" | "medium" | "high" | "critical"
+      alert_status: "open" | "in_progress" | "resolved" | "closed" | "escalated"
+      alert_type:
+        | "disengagement"
+        | "spiritual_gap"
+        | "unanswered_question"
+        | "milestone"
+        | "pastoral_care"
+        | "crisis"
+        | "custom"
       app_role: "admin" | "pastor" | "staff" | "member"
+      comment_type: "update" | "question" | "resolution" | "escalation"
+      resolution_type:
+        | "pastoral_visit"
+        | "phone_call"
+        | "email"
+        | "referral"
+        | "prayer"
+        | "other"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -828,7 +1038,27 @@ export type CompositeTypes<
 export const Constants = {
   public: {
     Enums: {
+      alert_priority: ["low", "medium", "high", "critical"],
+      alert_status: ["open", "in_progress", "resolved", "closed", "escalated"],
+      alert_type: [
+        "disengagement",
+        "spiritual_gap",
+        "unanswered_question",
+        "milestone",
+        "pastoral_care",
+        "crisis",
+        "custom",
+      ],
       app_role: ["admin", "pastor", "staff", "member"],
+      comment_type: ["update", "question", "resolution", "escalation"],
+      resolution_type: [
+        "pastoral_visit",
+        "phone_call",
+        "email",
+        "referral",
+        "prayer",
+        "other",
+      ],
     },
   },
 } as const
