@@ -11,6 +11,11 @@ import DashboardLayout from "./components/layout/DashboardLayout";
 import NotFound from "./pages/NotFound";
 import { AuthProvider } from "./contexts/AuthContext";
 import ProtectedRoute from "./components/auth/ProtectedRoute";
+import MembersListPage from "./pages/MembersListPage";
+import CreateMemberPage from "./pages/CreateMemberPage";
+import MemberProfilePage from "./pages/MemberProfilePage";
+import EditMemberPage from "./pages/EditMemberPage";
+import BulkImportPage from "./pages/BulkImportPage";
 
 const queryClient = new QueryClient();
 
@@ -33,8 +38,15 @@ const App = () => (
               </ProtectedRoute>
             }>
               <Route index element={<DashboardPage />} />
+              
+              {/* Member Management Routes */}
+              <Route path="members" element={<MembersListPage />} />
+              <Route path="members/create" element={<CreateMemberPage />} />
+              <Route path="members/import" element={<BulkImportPage />} />
+              <Route path="members/:id" element={<MemberProfilePage />} />
+              <Route path="members/:id/edit" element={<EditMemberPage />} />
+              
               {/* Placeholder routes for future features */}
-              <Route path="members" element={<div className="p-6 text-center text-muted-foreground">Members page coming soon...</div>} />
               <Route path="alerts" element={<div className="p-6 text-center text-muted-foreground">Pastoral Alerts page coming soon...</div>} />
               <Route path="analytics" element={<div className="p-6 text-center text-muted-foreground">Analytics page coming soon...</div>} />
               <Route path="communications" element={<div className="p-6 text-center text-muted-foreground">Communications page coming soon...</div>} />
