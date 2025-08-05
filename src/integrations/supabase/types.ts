@@ -234,6 +234,285 @@ export type Database = {
           },
         ]
       }
+      member_activities: {
+        Row: {
+          activity_date: string
+          activity_description: string | null
+          activity_title: string
+          activity_type: string
+          created_at: string | null
+          duration_minutes: number | null
+          id: string
+          location: string | null
+          member_id: string
+          notes: string | null
+          recorded_by: string | null
+        }
+        Insert: {
+          activity_date: string
+          activity_description?: string | null
+          activity_title: string
+          activity_type: string
+          created_at?: string | null
+          duration_minutes?: number | null
+          id?: string
+          location?: string | null
+          member_id: string
+          notes?: string | null
+          recorded_by?: string | null
+        }
+        Update: {
+          activity_date?: string
+          activity_description?: string | null
+          activity_title?: string
+          activity_type?: string
+          created_at?: string | null
+          duration_minutes?: number | null
+          id?: string
+          location?: string | null
+          member_id?: string
+          notes?: string | null
+          recorded_by?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "member_activities_member_id_fkey"
+            columns: ["member_id"]
+            isOneToOne: false
+            referencedRelation: "members"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "member_activities_recorded_by_fkey"
+            columns: ["recorded_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      member_history: {
+        Row: {
+          change_type: string
+          changed_at: string | null
+          changed_by: string | null
+          id: string
+          member_id: string
+          new_values: Json | null
+          old_values: Json | null
+          reason: string | null
+        }
+        Insert: {
+          change_type: string
+          changed_at?: string | null
+          changed_by?: string | null
+          id?: string
+          member_id: string
+          new_values?: Json | null
+          old_values?: Json | null
+          reason?: string | null
+        }
+        Update: {
+          change_type?: string
+          changed_at?: string | null
+          changed_by?: string | null
+          id?: string
+          member_id?: string
+          new_values?: Json | null
+          old_values?: Json | null
+          reason?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "member_history_changed_by_fkey"
+            columns: ["changed_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "member_history_member_id_fkey"
+            columns: ["member_id"]
+            isOneToOne: false
+            referencedRelation: "members"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      member_notes: {
+        Row: {
+          content: string
+          created_at: string | null
+          created_by: string
+          follow_up_date: string | null
+          follow_up_needed: boolean | null
+          id: string
+          is_confidential: boolean | null
+          member_id: string
+          note_type: string
+          tags: string[] | null
+          title: string
+          updated_at: string | null
+          visibility: string | null
+        }
+        Insert: {
+          content: string
+          created_at?: string | null
+          created_by: string
+          follow_up_date?: string | null
+          follow_up_needed?: boolean | null
+          id?: string
+          is_confidential?: boolean | null
+          member_id: string
+          note_type: string
+          tags?: string[] | null
+          title: string
+          updated_at?: string | null
+          visibility?: string | null
+        }
+        Update: {
+          content?: string
+          created_at?: string | null
+          created_by?: string
+          follow_up_date?: string | null
+          follow_up_needed?: boolean | null
+          id?: string
+          is_confidential?: boolean | null
+          member_id?: string
+          note_type?: string
+          tags?: string[] | null
+          title?: string
+          updated_at?: string | null
+          visibility?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "member_notes_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "member_notes_member_id_fkey"
+            columns: ["member_id"]
+            isOneToOne: false
+            referencedRelation: "members"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      members: {
+        Row: {
+          active: boolean | null
+          address: string | null
+          baptism_date: string | null
+          baptized: boolean | null
+          biblical_understanding: string | null
+          birthday: string | null
+          church_id: string
+          city: string | null
+          country: string | null
+          created_at: string | null
+          created_by: string | null
+          discipleship_stage: string | null
+          email: string | null
+          email_notifications: boolean | null
+          engagement_score: number | null
+          id: string
+          language_preference: string | null
+          last_activity_log: string | null
+          last_communication_response: string | null
+          last_service_attendance: string | null
+          member_number: string | null
+          name: string
+          phone_number: string | null
+          photo_url: string | null
+          salvation_date: string | null
+          saved_status: boolean | null
+          sms_notifications: boolean | null
+          spiritual_gifts: string[] | null
+          updated_at: string | null
+        }
+        Insert: {
+          active?: boolean | null
+          address?: string | null
+          baptism_date?: string | null
+          baptized?: boolean | null
+          biblical_understanding?: string | null
+          birthday?: string | null
+          church_id: string
+          city?: string | null
+          country?: string | null
+          created_at?: string | null
+          created_by?: string | null
+          discipleship_stage?: string | null
+          email?: string | null
+          email_notifications?: boolean | null
+          engagement_score?: number | null
+          id?: string
+          language_preference?: string | null
+          last_activity_log?: string | null
+          last_communication_response?: string | null
+          last_service_attendance?: string | null
+          member_number?: string | null
+          name: string
+          phone_number?: string | null
+          photo_url?: string | null
+          salvation_date?: string | null
+          saved_status?: boolean | null
+          sms_notifications?: boolean | null
+          spiritual_gifts?: string[] | null
+          updated_at?: string | null
+        }
+        Update: {
+          active?: boolean | null
+          address?: string | null
+          baptism_date?: string | null
+          baptized?: boolean | null
+          biblical_understanding?: string | null
+          birthday?: string | null
+          church_id?: string
+          city?: string | null
+          country?: string | null
+          created_at?: string | null
+          created_by?: string | null
+          discipleship_stage?: string | null
+          email?: string | null
+          email_notifications?: boolean | null
+          engagement_score?: number | null
+          id?: string
+          language_preference?: string | null
+          last_activity_log?: string | null
+          last_communication_response?: string | null
+          last_service_attendance?: string | null
+          member_number?: string | null
+          name?: string
+          phone_number?: string | null
+          photo_url?: string | null
+          salvation_date?: string | null
+          saved_status?: boolean | null
+          sms_notifications?: boolean | null
+          spiritual_gifts?: string[] | null
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "members_church_id_fkey"
+            columns: ["church_id"]
+            isOneToOne: false
+            referencedRelation: "churches"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "members_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       profiles: {
         Row: {
           activity_level: string | null
