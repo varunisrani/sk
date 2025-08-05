@@ -2,12 +2,18 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Users, Bell, TrendingUp, Calendar, Plus, Activity, AlertCircle } from "lucide-react";
+import { useAuth } from "@/contexts/AuthContext";
+import { useProfile } from "@/hooks/useProfile";
+import { useUserChurches } from "@/hooks/useChurch";
 
 const DashboardPage = () => {
-  // Mock data - replace with actual data when Supabase is connected
+  const { user: authUser } = useAuth();
+  const { data: profile } = useProfile();
+  const { data: userChurches } = useUserChurches();
+
   const user = {
-    name: "Pastor John Smith",
-    church: "Grace Community Church"
+    name: profile?.display_name || authUser?.email?.split('@')[0] || "User",
+    church: userChurches?.[0]?.churches?.name || "Your Church"
   };
 
   const stats = [

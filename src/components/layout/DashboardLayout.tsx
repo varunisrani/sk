@@ -24,37 +24,52 @@ import {
 } from "lucide-react";
 import { NavLink } from "react-router-dom";
 import { useToast } from "@/hooks/use-toast";
+import { useAuth } from "@/contexts/AuthContext";
+import { useProfile } from "@/hooks/useProfile";
+import { useUserChurches } from "@/hooks/useChurch";
 
 const DashboardLayout = () => {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const navigate = useNavigate();
   const { toast } = useToast();
+  const { signOut, user: authUser } = useAuth();
+  const { data: profile } = useProfile();
+  const { data: userChurches } = useUserChurches();
 
-  // Mock user data - replace with actual user context when Supabase is connected
+  // Extract user data
   const user = {
-    name: "Pastor John Smith",
-    email: "pastor@gracechurch.com",
-    church: "Grace Community Church",
+    name: profile?.display_name || authUser?.email?.split('@')[0] || "User",
+    email: authUser?.email || "",
+    church: userChurches?.[0]?.churches?.name || "Your Church",
     avatar: "",
-    initials: "JS"
+    initials: (profile?.display_name || authUser?.email || "U").charAt(0).toUpperCase()
   };
 
   const navigationItems = [
     { icon: Home, label: "Dashboard", href: "/dashboard" },
-    { icon: Users, label: "Members", href: "/members" },
-    { icon: Bell, label: "Pastoral Alerts", href: "/alerts" },
-    { icon: BarChart3, label: "Analytics", href: "/analytics" },
-    { icon: MessageSquare, label: "Communications", href: "/communications" },
-    { icon: BookOpen, label: "Ministry Support", href: "/ministry" },
-    { icon: Settings, label: "Settings", href: "/settings" },
+    { icon: Users, label: "Members", href: "/dashboard/members" },
+    { icon: Bell, label: "Pastoral Alerts", href: "/dashboard/alerts" },
+    { icon: BarChart3, label: "Analytics", href: "/dashboard/analytics" },
+    { icon: MessageSquare, label: "Communications", href: "/dashboard/communications" },
+    { icon: BookOpen, label: "Ministry Support", href: "/dashboard/ministry" },
+    { icon: Settings, label: "Settings", href: "/dashboard/settings" },
   ];
 
-  const handleLogout = () => {
-    toast({
-      title: "Signed out successfully",
-      description: "You have been logged out of your account.",
-    });
-    navigate("/");
+  const handleLogout = async () => {
+    try {
+      await signOut();
+      toast({
+        title: "Signed out successfully",
+        description: "You have been logged out of your account.",
+      });
+      navigate("/");
+    } catch (error) {
+      toast({
+        title: "Error signing out",
+        description: "Please try again.",
+        variant: "destructive",
+      });
+    }
   };
 
   return (
@@ -162,12 +177,12 @@ const DashboardLayout = () => {
                 </DropdownMenuLabel>
                 <DropdownMenuSeparator />
                 <DropdownMenuItem asChild>
-                  <NavLink to="/profile" className="w-full">
+                  <NavLink to="/dashboard/profile" className="w-full">
                     Profile Settings
                   </NavLink>
                 </DropdownMenuItem>
                 <DropdownMenuItem asChild>
-                  <NavLink to="/settings" className="w-full">
+                  <NavLink to="/dashboard/settings" className="w-full">
                     Church Settings
                   </NavLink>
                 </DropdownMenuItem>

@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -11,6 +11,8 @@ import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useToast } from "@/hooks/use-toast";
+import { useAuth } from "@/contexts/AuthContext";
+import { useCreateChurch } from "@/hooks/useChurch";
 
 const registerSchema = z.object({
   // Church Information
@@ -56,6 +58,15 @@ const RegisterPage = () => {
   const [isLoading, setIsLoading] = useState(false);
   const navigate = useNavigate();
   const { toast } = useToast();
+  const { signUp, user } = useAuth();
+  const createChurch = useCreateChurch();
+
+  // Redirect if already logged in
+  useEffect(() => {
+    if (user) {
+      navigate('/dashboard', { replace: true });
+    }
+  }, [user, navigate]);
 
   const {
     register,
@@ -98,21 +109,40 @@ const RegisterPage = () => {
   const onSubmit = async (data: RegisterFormData) => {
     setIsLoading(true);
     
-    // Simulate registration process (replace with actual Supabase when connected)
     try {
-      await new Promise(resolve => setTimeout(resolve, 2000));
+      // 1. Create user account
+      const { error: signUpError } = await signUp(data.email, data.password, data.fullName);
+      
+      if (signUpError) {
+        toast({
+          title: "Registration failed",
+          description: signUpError.message || "Failed to create user account.",
+          variant: "destructive",
+        });
+        return;
+      }
+
+      // 2. Create church (will be handled by auth state change and createChurch)
+      await createChurch.mutateAsync({
+        name: data.churchName,
+        address: data.churchAddress,
+        email: data.churchEmail,
+        phone_number: data.churchPhone || undefined,
+        website: data.churchWebsite || undefined,
+        active: true,
+      });
       
       toast({
         title: "Welcome to ECHAD SI Agent!",
-        description: "Your church account has been created successfully.",
+        description: "Please check your email to verify your account.",
       });
       
-      // Redirect to dashboard
+      // Redirect to dashboard (auth provider will handle this)
       navigate("/dashboard");
-    } catch (error) {
+    } catch (error: any) {
       toast({
         title: "Registration failed",
-        description: "Please try again or contact support.",
+        description: error.message || "Please try again or contact support.",
         variant: "destructive",
       });
     } finally {

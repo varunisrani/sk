@@ -1,15 +1,16 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Checkbox } from "@/components/ui/checkbox";
 import { BookOpen, Eye, EyeOff, Loader2 } from "lucide-react";
-import { Link, useNavigate } from "react-router-dom";
+import { Link, useNavigate, useLocation } from "react-router-dom";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useToast } from "@/hooks/use-toast";
+import { useAuth } from "@/contexts/AuthContext";
 
 const loginSchema = z.object({
   email: z.string().email("Please enter a valid email address"),
@@ -23,7 +24,17 @@ const LoginPage = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const navigate = useNavigate();
+  const location = useLocation();
   const { toast } = useToast();
+  const { signIn, user } = useAuth();
+
+  // Redirect if already logged in
+  useEffect(() => {
+    if (user) {
+      const from = location.state?.from || '/dashboard';
+      navigate(from, { replace: true });
+    }
+  }, [user, navigate, location]);
 
   const {
     register,
@@ -36,21 +47,30 @@ const LoginPage = () => {
   const onSubmit = async (data: LoginFormData) => {
     setIsLoading(true);
     
-    // Simulate login process (replace with actual Supabase auth when connected)
     try {
-      await new Promise(resolve => setTimeout(resolve, 1500));
+      const { error } = await signIn(data.email, data.password);
+      
+      if (error) {
+        toast({
+          title: "Sign in failed",
+          description: error.message || "Please check your credentials and try again.",
+          variant: "destructive",
+        });
+        return;
+      }
       
       toast({
         title: "Welcome back!",
         description: "You have been successfully signed in.",
       });
       
-      // Redirect to dashboard
-      navigate("/dashboard");
-    } catch (error) {
+      // Redirect to intended page or dashboard
+      const from = location.state?.from || '/dashboard';
+      navigate(from, { replace: true });
+    } catch (error: any) {
       toast({
         title: "Sign in failed",
-        description: "Please check your credentials and try again.",
+        description: error.message || "An unexpected error occurred.",
         variant: "destructive",
       });
     } finally {
@@ -164,10 +184,10 @@ const LoginPage = () => {
           </CardContent>
         </Card>
 
-        {/* Demo Notice */}
+        {/* Note */}
         <div className="mt-4 p-4 bg-muted/50 rounded-lg text-center">
           <p className="text-sm text-muted-foreground">
-            Demo Mode: Use any email and password to continue
+            Sign in with your church account credentials
           </p>
         </div>
       </div>
