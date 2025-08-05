@@ -14,6 +14,98 @@ export type Database = {
   }
   public: {
     Tables: {
+      church_settings: {
+        Row: {
+          church_id: string
+          created_at: string | null
+          description: string | null
+          id: string
+          setting_key: string
+          setting_type: string | null
+          setting_value: Json | null
+          updated_at: string | null
+        }
+        Insert: {
+          church_id: string
+          created_at?: string | null
+          description?: string | null
+          id?: string
+          setting_key: string
+          setting_type?: string | null
+          setting_value?: Json | null
+          updated_at?: string | null
+        }
+        Update: {
+          church_id?: string
+          created_at?: string | null
+          description?: string | null
+          id?: string
+          setting_key?: string
+          setting_type?: string | null
+          setting_value?: Json | null
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "church_settings_church_id_fkey"
+            columns: ["church_id"]
+            isOneToOne: false
+            referencedRelation: "churches"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      churches: {
+        Row: {
+          active: boolean | null
+          address: string | null
+          city: string | null
+          country: string | null
+          created_at: string | null
+          denomination: string | null
+          email: string | null
+          founded_date: string | null
+          id: string
+          name: string
+          pastor_name: string | null
+          phone_number: string | null
+          updated_at: string | null
+          website: string | null
+        }
+        Insert: {
+          active?: boolean | null
+          address?: string | null
+          city?: string | null
+          country?: string | null
+          created_at?: string | null
+          denomination?: string | null
+          email?: string | null
+          founded_date?: string | null
+          id?: string
+          name: string
+          pastor_name?: string | null
+          phone_number?: string | null
+          updated_at?: string | null
+          website?: string | null
+        }
+        Update: {
+          active?: boolean | null
+          address?: string | null
+          city?: string | null
+          country?: string | null
+          created_at?: string | null
+          denomination?: string | null
+          email?: string | null
+          founded_date?: string | null
+          id?: string
+          name?: string
+          pastor_name?: string | null
+          phone_number?: string | null
+          updated_at?: string | null
+          website?: string | null
+        }
+        Relationships: []
+      }
       elimination_logs: {
         Row: {
           id: string
@@ -146,12 +238,17 @@ export type Database = {
         Row: {
           activity_level: string | null
           age: number | null
+          church_id: string | null
           created_at: string
+          department: string | null
           dietary_preferences: string[] | null
           display_name: string | null
           health_goals: string[] | null
           height: number | null
+          hire_date: string | null
           id: string
+          is_active: boolean | null
+          position: string | null
           updated_at: string
           user_id: string
           weight: number | null
@@ -159,12 +256,17 @@ export type Database = {
         Insert: {
           activity_level?: string | null
           age?: number | null
+          church_id?: string | null
           created_at?: string
+          department?: string | null
           dietary_preferences?: string[] | null
           display_name?: string | null
           health_goals?: string[] | null
           height?: number | null
+          hire_date?: string | null
           id?: string
+          is_active?: boolean | null
+          position?: string | null
           updated_at?: string
           user_id: string
           weight?: number | null
@@ -172,17 +274,30 @@ export type Database = {
         Update: {
           activity_level?: string | null
           age?: number | null
+          church_id?: string | null
           created_at?: string
+          department?: string | null
           dietary_preferences?: string[] | null
           display_name?: string | null
           health_goals?: string[] | null
           height?: number | null
+          hire_date?: string | null
           id?: string
+          is_active?: boolean | null
+          position?: string | null
           updated_at?: string
           user_id?: string
           weight?: number | null
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "profiles_church_id_fkey"
+            columns: ["church_id"]
+            isOneToOne: false
+            referencedRelation: "churches"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       user_goals: {
         Row: {
@@ -223,6 +338,41 @@ export type Database = {
         }
         Relationships: []
       }
+      user_roles: {
+        Row: {
+          assigned_at: string | null
+          assigned_by: string | null
+          church_id: string
+          id: string
+          role: Database["public"]["Enums"]["app_role"]
+          user_id: string
+        }
+        Insert: {
+          assigned_at?: string | null
+          assigned_by?: string | null
+          church_id: string
+          id?: string
+          role: Database["public"]["Enums"]["app_role"]
+          user_id: string
+        }
+        Update: {
+          assigned_at?: string | null
+          assigned_by?: string | null
+          church_id?: string
+          id?: string
+          role?: Database["public"]["Enums"]["app_role"]
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "user_roles_church_id_fkey"
+            columns: ["church_id"]
+            isOneToOne: false
+            referencedRelation: "churches"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       weight_logs: {
         Row: {
           body_fat_percentage: number | null
@@ -261,10 +411,17 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      has_role: {
+        Args: {
+          _user_id: string
+          _church_id: string
+          _role: Database["public"]["Enums"]["app_role"]
+        }
+        Returns: boolean
+      }
     }
     Enums: {
-      [_ in never]: never
+      app_role: "admin" | "pastor" | "staff" | "member"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -391,6 +548,8 @@ export type CompositeTypes<
 
 export const Constants = {
   public: {
-    Enums: {},
+    Enums: {
+      app_role: ["admin", "pastor", "staff", "member"],
+    },
   },
 } as const
