@@ -290,3 +290,5 @@ export const MemberFiltersComponent = ({
     </div>
   );
 };
+
+export { MemberFiltersComponent as MemberFilters };
