@@ -31,12 +31,8 @@ const App = () => (
             <Route path="/login" element={<LoginPage />} />
             <Route path="/register" element={<RegisterPage />} />
             
-            {/* Protected Dashboard Routes */}
-            <Route path="/dashboard" element={
-              <ProtectedRoute>
-                <DashboardLayout />
-              </ProtectedRoute>
-            }>
+            {/* Bypass auth for now */}
+            <Route path="/dashboard" element={<DashboardLayout />}>
               <Route index element={<DashboardPage />} />
               
               {/* Member Management Routes */}
