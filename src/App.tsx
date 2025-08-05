@@ -27,12 +27,8 @@ const App = () => (
         <Sonner />
         <BrowserRouter>
           <Routes>
-            <Route path="/" element={<LandingPage />} />
-            <Route path="/login" element={<LoginPage />} />
-            <Route path="/register" element={<RegisterPage />} />
-            
-            {/* Bypass auth for now */}
-            <Route path="/dashboard" element={<DashboardLayout />}>
+            {/* Direct access to dashboard */}
+            <Route path="/" element={<DashboardLayout />}>
               <Route index element={<DashboardPage />} />
               
               {/* Member Management Routes */}
