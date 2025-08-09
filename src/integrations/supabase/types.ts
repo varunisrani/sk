@@ -2623,6 +2623,10 @@ export type Database = {
         Args: { p_church_id?: string }
         Returns: boolean
       }
+      bootstrap_first_pastor: {
+        Args: { p_church_id?: string }
+        Returns: boolean
+      }
       has_role: {
         Args:
           | {
