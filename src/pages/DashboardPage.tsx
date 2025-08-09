@@ -1,70 +1,130 @@
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Users, Bell, TrendingUp, Calendar, Plus, Activity, AlertCircle } from "lucide-react";
+import { Users, Bell, TrendingUp, Calendar, Plus, Activity, AlertCircle, BarChart3 } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { useProfile } from "@/hooks/useProfile";
 import { useUserChurches } from "@/hooks/useChurch";
+import { useDashboardAnalytics } from "@/hooks/useAnalytics";
+import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, PieChart, Pie, Cell, LineChart, Line, CartesianGrid, Legend } from "recharts";
 
 const DashboardPage = () => {
   const { user: authUser } = useAuth();
   const { data: profile } = useProfile();
   const { data: userChurches } = useUserChurches();
 
+  const { data: analytics, isLoading } = useDashboardAnalytics();
+
   const user = {
     name: profile?.display_name || authUser?.email?.split('@')[0] || "User",
     church: userChurches?.[0]?.churches?.name || "Your Church"
   };
 
+  const total = analytics?.metrics.totalActiveMembers ?? 0;
+  const newThisMonth = analytics?.metrics.newMembersThisMonth ?? 0;
+  const pendingAlerts = analytics?.metrics.pendingAlerts ?? 0;
+  const attendancePct = Math.round((analytics?.metrics.averageAttendanceRate ?? 0) * 100);
+  const baptismsThisYear = analytics?.metrics.baptismsThisYear ?? 0;
+  const topStage = (() => {
+    const dist = analytics?.metrics.stageDistribution || {};
+    let top = 'N/A';
+    let max = 0;
+    Object.entries(dist).forEach(([k, v]) => { if (v > max) { max = v; top = k; } });
+    return `${top} (${max})`;
+  })();
+
   const stats = [
     {
-      title: "Total Members",
-      value: "0",
-      description: "Start adding members to your database",
+      title: "Total Active Members",
+      value: total.toString(),
+      description: "All active profiles",
       icon: Users,
       color: "text-primary"
     },
     {
-      title: "Active Alerts",
-      value: "0",
-      description: "No pastoral alerts at this time",
-      icon: Bell,
-      color: "text-warning"
-    },
-    {
-      title: "This Month's Growth",
-      value: "0%",
-      description: "Growth compared to last month",
+      title: "New Members This Month",
+      value: newThisMonth.toString(),
+      description: "Joined this month",
       icon: TrendingUp,
       color: "text-success"
     },
     {
-      title: "Upcoming Events",
-      value: "0",
-      description: "Events scheduled for this month",
-      icon: Calendar,
+      title: "Pending Pastoral Alerts",
+      value: pendingAlerts.toString(),
+      description: "Open or in progress",
+      icon: Bell,
+      color: "text-warning"
+    },
+    {
+      title: "Average Attendance Rate",
+      value: `${attendancePct}%`,
+      description: "Last 30 days",
+      icon: BarChart3,
       color: "text-church-blue"
+    },
+    {
+      title: "Baptisms This Year",
+      value: baptismsThisYear.toString(),
+      description: `${new Date().getFullYear()}`,
+      icon: Calendar,
+      color: "text-primary"
+    },
+    {
+      title: "Discipleship Stage Distribution",
+      value: topStage,
+      description: "Most common stage",
+      icon: Users,
+      color: "text-primary"
     }
   ];
 
+  const COLORS = ['#10b981', '#3b82f6', '#f59e0b', '#ef4444', '#8b5cf6', '#22c55e', '#06b6d4'];
+
+  const exportReport = () => {
+    const lines: string[] = [];
+    lines.push('Metric,Value');
+    lines.push(`Total Active Members,${total}`);
+    lines.push(`New Members This Month,${newThisMonth}`);
+    lines.push(`Pending Pastoral Alerts,${pendingAlerts}`);
+    lines.push(`Average Attendance Rate,${attendancePct}%`);
+    lines.push(`Baptisms This Year,${baptismsThisYear}`);
+    lines.push('');
+    lines.push('Discipleship Stage Distribution');
+    Object.entries(analytics?.metrics.stageDistribution || {}).forEach(([k,v]) => lines.push(`${k},${v}`));
+    lines.push('');
+    lines.push('New Members (Last 6 Months)');
+    (analytics?.charts.newMembersLast6Months || []).forEach(r => lines.push(`${r.month},${r.count}`));
+    lines.push('');
+    lines.push('Alerts by Status');
+    (analytics?.charts.alertsByStatus || []).forEach(r => lines.push(`${r.status},${r.count}`));
+
+    const csv = lines.join('\n');
+    const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+    const urlObj = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = urlObj;
+    link.download = `church-analytics-${new Date().toISOString().slice(0,10)}.csv`;
+    link.click();
+    URL.revokeObjectURL(urlObj);
+  };
   const quickActions = [
     {
       title: "Add New Member",
       description: "Register a new church member",
       icon: Users,
-      action: "/members/new"
+      action: "/dashboard/members/create"
     },
     {
-      title: "Create Event",
-      description: "Schedule a church event",
-      icon: Calendar,
-      action: "/events/new"
-    },
-    {
-      title: "Send Communication",
-      description: "Send message to members",
+      title: "Create Alert",
+      description: "Open a pastoral alert",
       icon: Bell,
-      action: "/communications/new"
+      action: "/dashboard/alerts"
+    },
+    {
+      title: "View Analytics",
+      description: "Open analytics overview",
+      icon: BarChart3,
+      action: "/dashboard"
     }
   ];
 
