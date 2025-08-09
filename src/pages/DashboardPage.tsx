@@ -8,6 +8,7 @@ import { useUserChurches } from "@/hooks/useChurch";
 import { useDashboardAnalytics } from "@/hooks/useAnalytics";
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, PieChart, Pie, Cell, LineChart, Line, CartesianGrid, Legend } from "recharts";
 import { useIsStaff } from "@/hooks/useRoles";
+import FirstSetupCard from "@/components/auth/FirstSetupCard";
 
 const DashboardPage = () => {
   const { user: authUser } = useAuth();
@@ -152,6 +153,7 @@ const DashboardPage = () => {
   if (!isStaff) {
     return (
       <div className="space-y-6">
+        <FirstSetupCard />
         <div className="bg-gradient-to-r from-primary/10 to-church-blue/10 rounded-lg p-6">
           <h1 className="text-2xl font-bold text-foreground mb-2">Access Restricted</h1>
           <p className="text-muted-foreground">This dashboard is available to church staff (admin, pastor, staff). You can still view church announcements.</p>

@@ -13,9 +13,6 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
-import { useIsStaff } from "@/hooks/useRoles";
-import FirstSetupCard from "@/components/auth/FirstSetupCard";
-
 // Schemas
 const loginSchema = z.object({
   email: z.string().email("Please enter a valid email address"),
@@ -43,7 +40,6 @@ const AuthPage = () => {
   const location = useLocation();
   const { toast } = useToast();
 const { user, signIn, signUp } = useAuth();
-const isStaff = useIsStaff();
 
   const [showLoginPassword, setShowLoginPassword] = useState(false);
   const [showSignupPassword, setShowSignupPassword] = useState(false);
@@ -85,12 +81,12 @@ const isStaff = useIsStaff();
   }, []);
 
   // Redirect if already authenticated
-useEffect(() => {
-  if (user && isStaff) {
-    const from = (location.state as any)?.from || "/dashboard";
-    navigate(from, { replace: true });
-  }
-}, [user, isStaff, navigate, location.state]);
+  useEffect(() => {
+    if (user) {
+      const from = (location.state as any)?.from || "/dashboard";
+      navigate(from, { replace: true });
+    }
+  }, [user, navigate, location.state]);
 
   // Login form
   const {
@@ -172,7 +168,7 @@ useEffect(() => {
 
         <section aria-label="Authentication forms">
           <Tabs defaultValue={defaultTab} className="w-full">
-            <FirstSetupCard />
+            
             <TabsList className="grid w-full grid-cols-2">
               <TabsTrigger value="login">Login</TabsTrigger>
               <TabsTrigger value="signup">Sign Up</TabsTrigger>
