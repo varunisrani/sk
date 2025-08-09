@@ -14,6 +14,7 @@ import { format } from 'date-fns';
 import { Loader2, Plus, Eye } from 'lucide-react';
 import ReactQuill from 'react-quill';
 import 'react-quill/dist/quill.snow.css';
+import { useIsStaff } from '@/hooks/useRoles';
 
 const categoryLabels: Record<AnnouncementCategory, string> = {
   general: 'General',
@@ -158,6 +159,8 @@ const CommunicationsPage = () => {
     if (meta) meta.setAttribute('content', 'View and publish church announcements with categories and scheduling.');
   }, []);
 
+  const isStaff = useIsStaff();
+
   const [category, setCategory] = useState<'all' | AnnouncementCategory>('all');
   const [status, setStatus] = useState<'all' | 'active' | 'inactive'>('all');
 
@@ -169,7 +172,7 @@ const CommunicationsPage = () => {
     <main>
       <header className="mb-6">
         <h1 className="text-2xl font-semibold">Announcements</h1>
-        <p className="text-sm text-muted-foreground">Create and manage announcements for your church community.</p>
+        <p className="text-sm text-muted-foreground">{isStaff ? 'Create and manage announcements for your church community.' : 'View announcements from your church community.'}</p>
       </header>
 
       <section className="flex items-center justify-between mb-4">
@@ -198,7 +201,7 @@ const CommunicationsPage = () => {
             </Select>
           </div>
         </div>
-        <NewAnnouncementDialog onCreated={() => refetch()} />
+        {isStaff && <NewAnnouncementDialog onCreated={() => refetch()} />}
       </section>
 
       <section>
@@ -208,7 +211,7 @@ const CommunicationsPage = () => {
           <Card>
             <CardHeader>
               <CardTitle>No announcements yet</CardTitle>
-              <CardDescription>Click "New Announcement" to publish your first update.</CardDescription>
+              <CardDescription>{isStaff ? 'Click "New Announcement" to publish your first update.' : 'No announcements yet.'}</CardDescription>
             </CardHeader>
           </Card>
         ) : (
