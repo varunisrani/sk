@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Plus, Users, TrendingUp, Clock, AlertCircle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -11,6 +11,7 @@ import { MemberFilters } from '@/components/members/MemberFilters';
 import { useMembers, useMemberStats, useDeleteMember } from '@/hooks/useMembers';
 import { useToast } from '@/hooks/use-toast';
 import type { MemberFilters as MemberFiltersType } from '@/types/member';
+import { useIsStaff } from '@/hooks/useRoles';
 
 export default function MembersListPage() {
   const navigate = useNavigate();
@@ -18,6 +19,8 @@ export default function MembersListPage() {
   const [filters, setFilters] = useState<MemberFiltersType>({});
   const deleteMember = useDeleteMember();
   const { toast } = useToast();
+
+  const isStaff = useIsStaff();
 
   const { data: members = [], isLoading } = useMembers(filters);
   const { data: stats } = useMemberStats();
@@ -106,29 +109,33 @@ export default function MembersListPage() {
           >
             View
           </Button>
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={() => navigate(`/dashboard/members/${row.original.id}/edit`)}
-          >
-            Edit
-          </Button>
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={async () => {
-              if (confirm(`Delete ${row.original.name}? This action deactivates the member.`)) {
-                try {
-                  await deleteMember.mutateAsync(row.original.id);
-                  toast({ title: 'Member deleted', description: `${row.original.name} has been deactivated.` });
-                } catch (e: any) {
-                  toast({ title: 'Failed to delete member', description: e.message || 'Please try again.', variant: 'destructive' });
+          {isStaff && (
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => navigate(`/dashboard/members/${row.original.id}/edit`)}
+            >
+              Edit
+            </Button>
+          )}
+          {isStaff && (
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={async () => {
+                if (confirm(`Delete ${row.original.name}? This action deactivates the member.`)) {
+                  try {
+                    await deleteMember.mutateAsync(row.original.id);
+                    toast({ title: 'Member deleted', description: `${row.original.name} has been deactivated.` });
+                  } catch (e: any) {
+                    toast({ title: 'Failed to delete member', description: e.message || 'Please try again.', variant: 'destructive' });
+                  }
                 }
-              }
-            }}
-          >
-            Delete
-          </Button>
+              }}
+            >
+              Delete
+            </Button>
+          )}
         </div>
       ),
     },
@@ -148,10 +155,12 @@ export default function MembersListPage() {
             Manage your church members and track their spiritual journey
           </p>
         </div>
-        <Button onClick={() => navigate('/dashboard/members/create')}>
-          <Plus className="mr-2 h-4 w-4" />
-          Add Member
-        </Button>
+        {isStaff && (
+          <Button onClick={() => navigate('/dashboard/members/create')}>
+            <Plus className="mr-2 h-4 w-4" />
+            Add Member
+          </Button>
+        )}
       </div>
 
       {/* Stats Cards */}
@@ -247,7 +256,7 @@ export default function MembersListPage() {
                   member={member}
                   onEdit={() => navigate(`/dashboard/members/${member.id}/edit`)}
                   onViewProfile={() => navigate(`/dashboard/members/${member.id}`)}
-                  showQuickActions
+                  showQuickActions={isStaff}
                 />
               ))}
             </div>

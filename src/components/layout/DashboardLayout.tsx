@@ -27,6 +27,7 @@ import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/contexts/AuthContext";
 import { useProfile } from "@/hooks/useProfile";
 import { useUserChurches } from "@/hooks/useChurch";
+import { useIsStaff } from "@/hooks/useRoles";
 
 const DashboardLayout = () => {
   const [sidebarOpen, setSidebarOpen] = useState(false);
@@ -35,6 +36,7 @@ const DashboardLayout = () => {
   const { signOut, user: authUser } = useAuth();
   const { data: profile } = useProfile();
   const { data: userChurches } = useUserChurches();
+  const isStaff = useIsStaff();
 
   // Extract user data
   const user = {
@@ -48,11 +50,15 @@ const DashboardLayout = () => {
   const navigationItems = [
     { icon: Home, label: "Dashboard", href: "/dashboard" },
     { icon: Users, label: "Members", href: "/dashboard/members" },
-    { icon: Bell, label: "Pastoral Alerts", href: "/dashboard/alerts" },
-    { icon: BarChart3, label: "Analytics", href: "/dashboard/analytics" },
     { icon: MessageSquare, label: "Communications", href: "/dashboard/communications" },
-    { icon: BookOpen, label: "Ministry Support", href: "/dashboard/ministry" },
-    { icon: Settings, label: "Settings", href: "/dashboard/settings" },
+    ...(isStaff
+      ? [
+          { icon: Bell, label: "Pastoral Alerts", href: "/dashboard/alerts" },
+          { icon: BarChart3, label: "Analytics", href: "/dashboard/analytics" },
+          { icon: BookOpen, label: "Ministry Support", href: "/dashboard/ministry" },
+          { icon: Settings, label: "Settings", href: "/dashboard/settings" },
+        ]
+      : []),
   ];
 
   const handleLogout = async () => {

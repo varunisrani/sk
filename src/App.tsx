@@ -10,15 +10,16 @@ import DashboardPage from "./pages/DashboardPage";
 import DashboardLayout from "./components/layout/DashboardLayout";
 import NotFound from "./pages/NotFound";
 import { AuthProvider } from "./contexts/AuthContext";
-// import ProtectedRoute from "./components/auth/ProtectedRoute";
+import ProtectedRoute from "./components/auth/ProtectedRoute";
 import MembersListPage from "./pages/MembersListPage";
 import CreateMemberPage from "./pages/CreateMemberPage";
 import MemberProfilePage from "./pages/MemberProfilePage";
 import EditMemberPage from "./pages/EditMemberPage";
 import BulkImportPage from "./pages/BulkImportPage";
-import AlertsPage from "./pages/AlertsPage";
 import AlertDetailPage from "./pages/AlertDetailPage";
 import CommunicationsPage from "./pages/CommunicationsPage";
+import RoleGuard from "./components/auth/RoleGuard";
+import AlertsPage from "./pages/AlertsPage";
 
 const queryClient = new QueryClient();
 
@@ -36,25 +37,25 @@ const App = () => (
             <Route path="/register" element={<RegisterPage />} />
 
             {/* Dashboard */}
-            <Route path="/dashboard" element={<DashboardLayout />}>
+            <Route path="/dashboard" element={<ProtectedRoute><DashboardLayout /></ProtectedRoute>}>
               <Route index element={<DashboardPage />} />
               
               {/* Member Management Routes */}
               <Route path="members" element={<MembersListPage />} />
-              <Route path="members/create" element={<CreateMemberPage />} />
-              <Route path="members/import" element={<BulkImportPage />} />
+              <Route path="members/create" element={<RoleGuard requireStaff><CreateMemberPage /></RoleGuard>} />
+              <Route path="members/import" element={<RoleGuard requireStaff><BulkImportPage /></RoleGuard>} />
               <Route path="members/:id" element={<MemberProfilePage />} />
-              <Route path="members/:id/edit" element={<EditMemberPage />} />
+              <Route path="members/:id/edit" element={<RoleGuard requireStaff><EditMemberPage /></RoleGuard>} />
               
               {/* Pastoral Alerts */}
-              <Route path="alerts" element={<AlertsPage />} />
-              <Route path="alerts/:id" element={<AlertDetailPage />} />
+              <Route path="alerts" element={<RoleGuard requireStaff><AlertsPage /></RoleGuard>} />
+              <Route path="alerts/:id" element={<RoleGuard requireStaff><AlertDetailPage /></RoleGuard>} />
               
               {/* Placeholder routes for future features */}
-              <Route path="analytics" element={<div className="p-6 text-center text-muted-foreground">Analytics page coming soon...</div>} />
+              <Route path="analytics" element={<RoleGuard requireStaff><div className="p-6 text-center text-muted-foreground">Analytics page coming soon...</div></RoleGuard>} />
               <Route path="communications" element={<CommunicationsPage />} />
-              <Route path="ministry" element={<div className="p-6 text-center text-muted-foreground">Ministry Support page coming soon...</div>} />
-              <Route path="settings" element={<div className="p-6 text-center text-muted-foreground">Settings page coming soon...</div>} />
+              <Route path="ministry" element={<RoleGuard requireStaff><div className="p-6 text-center text-muted-foreground">Ministry Support page coming soon...</div></RoleGuard>} />
+              <Route path="settings" element={<RoleGuard requireStaff><div className="p-6 text-center text-muted-foreground">Settings page coming soon...</div></RoleGuard>} />
             </Route>
             
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
