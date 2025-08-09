@@ -11,6 +11,8 @@ import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/contexts/AuthContext";
+import { useIsStaff } from "@/hooks/useRoles";
+import FirstSetupCard from "@/components/auth/FirstSetupCard";
 
 const loginSchema = z.object({
   email: z.string().email("Please enter a valid email address"),
@@ -26,15 +28,16 @@ const LoginPage = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const { toast } = useToast();
-  const { signIn, user } = useAuth();
+const { signIn, user } = useAuth();
+const isStaff = useIsStaff();
 
-  // Redirect if already logged in
-  useEffect(() => {
-    if (user) {
-      const from = location.state?.from || '/dashboard';
-      navigate(from, { replace: true });
-    }
-  }, [user, navigate, location]);
+// Redirect if already logged in and already staff (admin/pastor/staff)
+useEffect(() => {
+  if (user && isStaff) {
+    const from = location.state?.from || '/dashboard';
+    navigate(from, { replace: true });
+  }
+}, [user, isStaff, navigate, location]);
 
   const {
     register,
@@ -92,6 +95,8 @@ const LoginPage = () => {
           <h1 className="text-2xl font-bold text-foreground">Welcome Back</h1>
           <p className="text-muted-foreground">Sign in to your church management dashboard</p>
         </div>
+
+        {user && !isStaff && <FirstSetupCard />}
 
         {/* Login Form */}
         <Card>
