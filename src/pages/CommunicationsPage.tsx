@@ -15,6 +15,8 @@ import { Loader2, Plus, Eye } from 'lucide-react';
 import ReactQuill from 'react-quill';
 import 'react-quill/dist/quill.snow.css';
 import { useIsStaff } from '@/hooks/useRoles';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import FirstSetupCard from '@/components/auth/FirstSetupCard';
 
 const categoryLabels: Record<AnnouncementCategory, string> = {
   general: 'General',
@@ -175,76 +177,163 @@ const CommunicationsPage = () => {
         <p className="text-sm text-muted-foreground">{isStaff ? 'Create and manage announcements for your church community.' : 'View announcements from your church community.'}</p>
       </header>
 
-      <section className="flex items-center justify-between mb-4">
-        <div className="flex gap-3 items-center">
-          <div className="w-48">
-            <Label>Category</Label>
-            <Select value={category} onValueChange={(v: any) => setCategory(v)}>
-              <SelectTrigger><SelectValue placeholder="All" /></SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">All</SelectItem>
-                <SelectItem value="general">General</SelectItem>
-                <SelectItem value="urgent">Urgent</SelectItem>
-                <SelectItem value="event">Event</SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
-          <div className="w-48">
-            <Label>Status</Label>
-            <Select value={status} onValueChange={(v: any) => setStatus(v)}>
-              <SelectTrigger><SelectValue placeholder="All" /></SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">All</SelectItem>
-                <SelectItem value="active">Active</SelectItem>
-                <SelectItem value="inactive">Inactive</SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
-        </div>
-        {isStaff && <NewAnnouncementDialog onCreated={() => refetch()} />}
-      </section>
+      {isStaff ? (
+        <>
+          <section className="flex items-center justify-between mb-4">
+            <div className="flex gap-3 items-center">
+              <div className="w-48">
+                <Label>Category</Label>
+                <Select value={category} onValueChange={(v: any) => setCategory(v)}>
+                  <SelectTrigger><SelectValue placeholder="All" /></SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">All</SelectItem>
+                    <SelectItem value="general">General</SelectItem>
+                    <SelectItem value="urgent">Urgent</SelectItem>
+                    <SelectItem value="event">Event</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+              <div className="w-48">
+                <Label>Status</Label>
+                <Select value={status} onValueChange={(v: any) => setStatus(v)}>
+                  <SelectTrigger><SelectValue placeholder="All" /></SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">All</SelectItem>
+                    <SelectItem value="active">Active</SelectItem>
+                    <SelectItem value="inactive">Inactive</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+            </div>
+            {isStaff && <NewAnnouncementDialog onCreated={() => refetch()} />}
+          </section>
 
-      <section>
-        {isLoading ? (
-          <div className="py-10 text-center text-muted-foreground flex items-center justify-center gap-2"><Loader2 className="h-4 w-4 animate-spin" /> Loading announcements...</div>
-        ) : announcements.length === 0 ? (
-          <Card>
-            <CardHeader>
-              <CardTitle>No announcements yet</CardTitle>
-              <CardDescription>{isStaff ? 'Click "New Announcement" to publish your first update.' : 'No announcements yet.'}</CardDescription>
-            </CardHeader>
-          </Card>
-        ) : (
-          <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
-            {grouped.map((a) => (
-              <Card key={a.id} className="flex flex-col">
+          <section>
+            {isLoading ? (
+              <div className="py-10 text-center text-muted-foreground flex items-center justify-center gap-2"><Loader2 className="h-4 w-4 animate-spin" /> Loading announcements...</div>
+            ) : announcements.length === 0 ? (
+              <Card>
                 <CardHeader>
-                  <div className="flex items-start justify-between gap-2">
-                    <div>
-                      <CardTitle className="text-base">{a.title}</CardTitle>
-                      <CardDescription>
-                        <div className="flex gap-2 items-center">
-                          <Badge variant={typeBadgeVariant(a.category)}>{categoryLabels[a.category]}</Badge>
-                          <span>•</span>
-                          <span>{a.publish_date ? format(new Date(a.publish_date), 'PPP') : 'No date'}</span>
-                        </div>
-                      </CardDescription>
-                    </div>
-                    <Badge variant={a.active ? 'default' : 'outline'}>{a.active ? 'Active' : 'Inactive'}</Badge>
-                  </div>
+                  <CardTitle>No announcements yet</CardTitle>
+                  <CardDescription>{isStaff ? 'Click "New Announcement" to publish your first update.' : 'No announcements yet.'}</CardDescription>
                 </CardHeader>
-                <CardContent className="flex-1">
-                  <div className="line-clamp-3 text-sm" dangerouslySetInnerHTML={{ __html: a.body_html }} />
-                </CardContent>
-                <div className="flex items-center justify-between px-6 pb-4">
-                  <div className="text-xs text-muted-foreground">{a.view_count} views</div>
-                  <AnnouncementViewDialog announcement={a} />
-                </div>
               </Card>
-            ))}
-          </div>
-        )}
-      </section>
+            ) : (
+              <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
+                {grouped.map((a) => (
+                  <Card key={a.id} className="flex flex-col">
+                    <CardHeader>
+                      <div className="flex items-start justify-between gap-2">
+                        <div>
+                          <CardTitle className="text-base">{a.title}</CardTitle>
+                          <CardDescription>
+                            <div className="flex gap-2 items-center">
+                              <Badge variant={typeBadgeVariant(a.category)}>{categoryLabels[a.category]}</Badge>
+                              <span>•</span>
+                              <span>{a.publish_date ? format(new Date(a.publish_date), 'PPP') : 'No date'}</span>
+                            </div>
+                          </CardDescription>
+                        </div>
+                        <Badge variant={a.active ? 'default' : 'outline'}>{a.active ? 'Active' : 'Inactive'}</Badge>
+                      </div>
+                    </CardHeader>
+                    <CardContent className="flex-1">
+                      <div className="line-clamp-3 text-sm" dangerouslySetInnerHTML={{ __html: a.body_html }} />
+                    </CardContent>
+                    <div className="flex items-center justify-between px-6 pb-4">
+                      <div className="text-xs text-muted-foreground">{a.view_count} views</div>
+                      <AnnouncementViewDialog announcement={a} />
+                    </div>
+                  </Card>
+                ))}
+              </div>
+            )}
+          </section>
+        </>
+      ) : (
+        <Tabs defaultValue="setup" className="w-full">
+          <TabsList className="grid w-full grid-cols-2">
+            <TabsTrigger value="announcements">Announcements</TabsTrigger>
+            <TabsTrigger value="setup">First-time setup</TabsTrigger>
+          </TabsList>
+
+          <TabsContent value="announcements">
+            <section className="flex items-center justify-between mb-4">
+              <div className="flex gap-3 items-center">
+                <div className="w-48">
+                  <Label>Category</Label>
+                  <Select value={category} onValueChange={(v: any) => setCategory(v)}>
+                    <SelectTrigger><SelectValue placeholder="All" /></SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="all">All</SelectItem>
+                      <SelectItem value="general">General</SelectItem>
+                      <SelectItem value="urgent">Urgent</SelectItem>
+                      <SelectItem value="event">Event</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div className="w-48">
+                  <Label>Status</Label>
+                  <Select value={status} onValueChange={(v: any) => setStatus(v)}>
+                    <SelectTrigger><SelectValue placeholder="All" /></SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="all">All</SelectItem>
+                      <SelectItem value="active">Active</SelectItem>
+                      <SelectItem value="inactive">Inactive</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+              </div>
+            </section>
+
+            <section>
+              {isLoading ? (
+                <div className="py-10 text-center text-muted-foreground flex items-center justify-center gap-2"><Loader2 className="h-4 w-4 animate-spin" /> Loading announcements...</div>
+              ) : announcements.length === 0 ? (
+                <Card>
+                  <CardHeader>
+                    <CardTitle>No announcements yet</CardTitle>
+                    <CardDescription>No announcements yet.</CardDescription>
+                  </CardHeader>
+                </Card>
+              ) : (
+                <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
+                  {grouped.map((a) => (
+                    <Card key={a.id} className="flex flex-col">
+                      <CardHeader>
+                        <div className="flex items-start justify-between gap-2">
+                          <div>
+                            <CardTitle className="text-base">{a.title}</CardTitle>
+                            <CardDescription>
+                              <div className="flex gap-2 items-center">
+                                <Badge variant={typeBadgeVariant(a.category)}>{categoryLabels[a.category]}</Badge>
+                                <span>•</span>
+                                <span>{a.publish_date ? format(new Date(a.publish_date), 'PPP') : 'No date'}</span>
+                              </div>
+                            </CardDescription>
+                          </div>
+                          <Badge variant={a.active ? 'default' : 'outline'}>{a.active ? 'Active' : 'Inactive'}</Badge>
+                        </div>
+                      </CardHeader>
+                      <CardContent className="flex-1">
+                        <div className="line-clamp-3 text-sm" dangerouslySetInnerHTML={{ __html: a.body_html }} />
+                      </CardContent>
+                      <div className="flex items-center justify-between px-6 pb-4">
+                        <div className="text-xs text-muted-foreground">{a.view_count} views</div>
+                        <AnnouncementViewDialog announcement={a} />
+                      </div>
+                    </Card>
+                  ))}
+                </div>
+              )}
+            </section>
+          </TabsContent>
+
+          <TabsContent value="setup">
+            <FirstSetupCard />
+          </TabsContent>
+        </Tabs>
+      )}
     </main>
   );
 };
