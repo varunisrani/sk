@@ -2619,6 +2619,10 @@ export type Database = {
         Args: { p_user_id?: string; p_church_id?: string }
         Returns: undefined
       }
+      bootstrap_first_admin: {
+        Args: { p_church_id?: string }
+        Returns: boolean
+      }
       has_role: {
         Args:
           | {
