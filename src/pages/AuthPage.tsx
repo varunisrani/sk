@@ -172,7 +172,7 @@ useEffect(() => {
 
         <section aria-label="Authentication forms">
           <Tabs defaultValue={defaultTab} className="w-full">
-            {user && !isStaff && <FirstSetupCard />}
+            <FirstSetupCard />
             <TabsList className="grid w-full grid-cols-2">
               <TabsTrigger value="login">Login</TabsTrigger>
               <TabsTrigger value="signup">Sign Up</TabsTrigger>

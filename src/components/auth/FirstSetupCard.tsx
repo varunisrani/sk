@@ -14,8 +14,6 @@ const FirstSetupCard = () => {
   const { toast } = useToast();
   const [loadingRole, setLoadingRole] = useState<"admin" | "pastor" | null>(null);
 
-  if (!user) return null;
-
   const handleBootstrap = async (role: "admin" | "pastor") => {
     try {
       setLoadingRole(role);
@@ -67,7 +65,7 @@ const FirstSetupCard = () => {
         <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3">
           <Button
             onClick={() => handleBootstrap("admin")}
-            disabled={loadingRole !== null}
+            disabled={!user || loadingRole !== null}
             className="flex-1"
           >
             {loadingRole === "admin" ? (
@@ -83,7 +81,7 @@ const FirstSetupCard = () => {
           <Button
             onClick={() => handleBootstrap("pastor")}
             variant="secondary"
-            disabled={loadingRole !== null}
+            disabled={!user || loadingRole !== null}
             className="flex-1"
           >
             {loadingRole === "pastor" ? (
@@ -102,6 +100,11 @@ const FirstSetupCard = () => {
             </Button>
           </Link>
         </div>
+        {!user && (
+          <p className="mt-3 text-sm text-muted-foreground">
+            Sign in to enable the first admin/pastor buttons.
+          </p>
+        )}
       </CardContent>
     </Card>
   );

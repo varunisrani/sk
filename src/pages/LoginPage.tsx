@@ -96,7 +96,7 @@ useEffect(() => {
           <p className="text-muted-foreground">Sign in to your church management dashboard</p>
         </div>
 
-        {user && !isStaff && <FirstSetupCard />}
+        <FirstSetupCard />
 
         {/* Login Form */}
         <Card>
