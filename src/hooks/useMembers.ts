@@ -3,6 +3,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
 import { useUserChurches } from '@/hooks/useChurch';
 import { Member, MemberFormData, MemberFilters, MemberStats } from '@/types/member';
+const PUBLIC_CHURCH_ID = '00000000-0000-0000-0000-000000000000';
 
 export const useMembers = (filters?: MemberFilters) => {
   const { user } = useAuth();
@@ -134,20 +135,25 @@ export const useCreateMember = () => {
 
   return useMutation({
     mutationFn: async (memberData: MemberFormData) => {
-      if (!user?.id || !churchId) throw new Error('User not authenticated or no church selected');
+      // Determine effective church
+      const effectiveChurchId = churchId || PUBLIC_CHURCH_ID;
 
-      // Get current user's profile for created_by
-      const { data: profile } = await supabase
-        .from('profiles')
-        .select('id')
-        .eq('user_id', user.id)
-        .single();
+      // Optionally get profile id for created_by when logged in
+      let profileId: string | null = null;
+      if (user?.id) {
+        const { data: profile } = await supabase
+          .from('profiles')
+          .select('id')
+          .eq('user_id', user.id)
+          .maybeSingle();
+        profileId = profile?.id ?? null;
+      }
 
       // Generate member number if not provided
       const memberNumber = `M${Date.now().toString().slice(-6)}`;
 
       const memberToInsert = {
-        church_id: churchId,
+        church_id: effectiveChurchId,
         name: memberData.name,
         email: memberData.email || null,
         phone_number: memberData.phone_number || null,
@@ -167,7 +173,7 @@ export const useCreateMember = () => {
         language_preference: memberData.language_preference,
         member_number: memberNumber,
         photo_url: memberData.photo_url || null,
-        created_by: profile?.id || null,
+        created_by: profileId,
       };
 
       const { data, error } = await supabase

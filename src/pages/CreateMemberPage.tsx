@@ -5,12 +5,14 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { MemberForm } from '@/components/members/MemberForm';
 import { useCreateMember } from '@/hooks/useMembers';
 import { useToast } from '@/hooks/use-toast';
+import { useAuth } from '@/contexts/AuthContext';
 import type { MemberFormData } from '@/types/member';
 
 export default function CreateMemberPage() {
   const navigate = useNavigate();
   const { toast } = useToast();
   const createMemberMutation = useCreateMember();
+  const { user } = useAuth();
 
   const handleSubmit = async (data: MemberFormData) => {
     try {
@@ -21,7 +23,7 @@ export default function CreateMemberPage() {
         description: `${data.name} has been added to your church.`,
       });
       
-      navigate(`/dashboard/members/${newMember.id}`);
+      navigate(user ? `/dashboard/members/${newMember.id}` : '/dashboard/members');
     } catch (error: any) {
       toast({
         title: "Failed to create member",
