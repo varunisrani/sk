@@ -9,16 +9,15 @@ export const useMembers = (filters?: MemberFilters) => {
   const { user } = useAuth();
   const { data: userChurches } = useUserChurches();
   const churchId = userChurches?.[0]?.church_id;
+  const effectiveChurchId = churchId || PUBLIC_CHURCH_ID;
 
   return useQuery({
-    queryKey: ['members', churchId, filters],
+    queryKey: ['members', effectiveChurchId, filters],
     queryFn: async () => {
-      if (!churchId) return [];
-
       let query = supabase
         .from('members')
         .select('*')
-        .eq('church_id', churchId)
+        .eq('church_id', effectiveChurchId)
         .eq('active', true)
         .order('name');
 
@@ -42,7 +41,7 @@ export const useMembers = (filters?: MemberFilters) => {
       if (error) throw error;
       return data as Member[];
     },
-    enabled: !!churchId,
+    enabled: true,
   });
 };
 
@@ -67,16 +66,15 @@ export const useMemberStats = () => {
   const { user } = useAuth();
   const { data: userChurches } = useUserChurches();
   const churchId = userChurches?.[0]?.church_id;
+  const effectiveChurchId = churchId || PUBLIC_CHURCH_ID;
 
   return useQuery({
-    queryKey: ['member-stats', churchId],
+    queryKey: ['member-stats', effectiveChurchId],
     queryFn: async () => {
-      if (!churchId) return null;
-
       const { data: members, error } = await supabase
         .from('members')
         .select('discipleship_stage, engagement_score, last_activity_log')
-        .eq('church_id', churchId)
+        .eq('church_id', effectiveChurchId)
         .eq('active', true);
 
       if (error) throw error;
@@ -123,7 +121,7 @@ export const useMemberStats = () => {
 
       return stats;
     },
-    enabled: !!churchId,
+    enabled: true,
   });
 };
 
