@@ -9,6 +9,7 @@ import { useDashboardAnalytics } from "@/hooks/useAnalytics";
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, PieChart, Pie, Cell, LineChart, Line, CartesianGrid, Legend } from "recharts";
 import { useIsStaff } from "@/hooks/useRoles";
 import FirstSetupCard from "@/components/auth/FirstSetupCard";
+import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 
 const DashboardPage = () => {
   const { user: authUser } = useAuth();
@@ -153,20 +154,32 @@ const DashboardPage = () => {
   if (!isStaff) {
     return (
       <div className="space-y-6">
-        <FirstSetupCard />
-        <div className="bg-gradient-to-r from-primary/10 to-church-blue/10 rounded-lg p-6">
-          <h1 className="text-2xl font-bold text-foreground mb-2">Access Restricted</h1>
-          <p className="text-muted-foreground">This dashboard is available to church staff (admin, pastor, staff). You can still view church announcements.</p>
-        </div>
-        <Card>
-          <CardHeader>
-            <CardTitle>Announcements</CardTitle>
-            <CardDescription>Visit Communications to view the latest updates from your church.</CardDescription>
-          </CardHeader>
-          <CardContent>
-            <Button onClick={() => (window.location.href = '/dashboard/communications')}>Go to Communications</Button>
-          </CardContent>
-        </Card>
+        <Tabs defaultValue="setup" className="w-full">
+          <TabsList className="grid w-full grid-cols-2">
+            <TabsTrigger value="overview">Overview</TabsTrigger>
+            <TabsTrigger value="setup">First-time setup</TabsTrigger>
+          </TabsList>
+
+          <TabsContent value="overview" className="space-y-6">
+            <div className="bg-gradient-to-r from-primary/10 to-church-blue/10 rounded-lg p-6">
+              <h1 className="text-2xl font-bold text-foreground mb-2">Access Restricted</h1>
+              <p className="text-muted-foreground">This dashboard is available to church staff (admin, pastor, staff). You can still view church announcements.</p>
+            </div>
+            <Card>
+              <CardHeader>
+                <CardTitle>Announcements</CardTitle>
+                <CardDescription>Visit Communications to view the latest updates from your church.</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <Button onClick={() => (window.location.href = '/dashboard/communications')}>Go to Communications</Button>
+              </CardContent>
+            </Card>
+          </TabsContent>
+
+          <TabsContent value="setup">
+            <FirstSetupCard />
+          </TabsContent>
+        </Tabs>
       </div>
     );
   }
