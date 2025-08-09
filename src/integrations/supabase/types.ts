@@ -165,6 +165,63 @@ export type Database = {
           },
         ]
       }
+      announcements: {
+        Row: {
+          active: boolean
+          body_html: string
+          category: Database["public"]["Enums"]["announcement_category"]
+          church_id: string
+          created_at: string
+          created_by: string | null
+          id: string
+          publish_date: string | null
+          title: string
+          updated_at: string
+          view_count: number
+        }
+        Insert: {
+          active?: boolean
+          body_html: string
+          category?: Database["public"]["Enums"]["announcement_category"]
+          church_id: string
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          publish_date?: string | null
+          title: string
+          updated_at?: string
+          view_count?: number
+        }
+        Update: {
+          active?: boolean
+          body_html?: string
+          category?: Database["public"]["Enums"]["announcement_category"]
+          church_id?: string
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          publish_date?: string | null
+          title?: string
+          updated_at?: string
+          view_count?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "announcements_church_id_fkey"
+            columns: ["church_id"]
+            isOneToOne: false
+            referencedRelation: "churches"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "announcements_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       church_settings: {
         Row: {
           church_id: string
@@ -2562,6 +2619,10 @@ export type Database = {
         }
         Returns: boolean
       }
+      increment_announcement_view: {
+        Args: { p_announcement_id: string }
+        Returns: undefined
+      }
     }
     Enums: {
       ai_decision_type_enum:
@@ -2580,6 +2641,7 @@ export type Database = {
         | "pastoral_care"
         | "crisis"
         | "custom"
+      announcement_category: "general" | "urgent" | "event"
       app_role: "admin" | "pastor" | "staff" | "member"
       comment_type: "update" | "question" | "resolution" | "escalation"
       devotional_difficulty_enum: "beginner" | "intermediate" | "advanced"
@@ -2866,6 +2928,7 @@ export const Constants = {
         "crisis",
         "custom",
       ],
+      announcement_category: ["general", "urgent", "event"],
       app_role: ["admin", "pastor", "staff", "member"],
       comment_type: ["update", "question", "resolution", "escalation"],
       devotional_difficulty_enum: ["beginner", "intermediate", "advanced"],
