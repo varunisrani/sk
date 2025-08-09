@@ -27,8 +27,13 @@ const App = () => (
         <Sonner />
         <BrowserRouter>
           <Routes>
-            {/* Direct access to dashboard */}
-            <Route path="/" element={<DashboardLayout />}>
+            {/* Public routes */}
+            <Route path="/" element={<LandingPage />} />
+            <Route path="/login" element={<LoginPage />} />
+            <Route path="/register" element={<RegisterPage />} />
+
+            {/* Dashboard */}
+            <Route path="/dashboard" element={<DashboardLayout />}>
               <Route index element={<DashboardPage />} />
               
               {/* Member Management Routes */}

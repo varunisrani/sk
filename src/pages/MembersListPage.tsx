@@ -8,13 +8,16 @@ import { DataTable } from '@/components/ui/DataTable';
 import { Badge } from '@/components/ui/badge';
 import { MemberCard } from '@/components/members/MemberCard';
 import { MemberFilters } from '@/components/members/MemberFilters';
-import { useMembers, useMemberStats } from '@/hooks/useMembers';
+import { useMembers, useMemberStats, useDeleteMember } from '@/hooks/useMembers';
+import { useToast } from '@/hooks/use-toast';
 import type { MemberFilters as MemberFiltersType } from '@/types/member';
 
 export default function MembersListPage() {
   const navigate = useNavigate();
   const [view, setView] = useState<'table' | 'grid'>('table');
   const [filters, setFilters] = useState<MemberFiltersType>({});
+  const deleteMember = useDeleteMember();
+  const { toast } = useToast();
 
   const { data: members = [], isLoading } = useMembers(filters);
   const { data: stats } = useMemberStats();
@@ -109,6 +112,22 @@ export default function MembersListPage() {
             onClick={() => navigate(`/dashboard/members/${row.original.id}/edit`)}
           >
             Edit
+          </Button>
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={async () => {
+              if (confirm(`Delete ${row.original.name}? This action deactivates the member.`)) {
+                try {
+                  await deleteMember.mutateAsync(row.original.id);
+                  toast({ title: 'Member deleted', description: `${row.original.name} has been deactivated.` });
+                } catch (e: any) {
+                  toast({ title: 'Failed to delete member', description: e.message || 'Please try again.', variant: 'destructive' });
+                }
+              }
+            }}
+          >
+            Delete
           </Button>
         </div>
       ),
