@@ -33,7 +33,7 @@ const App = () => (
             <Route path="/register" element={<RegisterPage />} />
 
             {/* Dashboard */}
-            <Route path="/dashboard" element={<DashboardLayout />}>
+            <Route path="/dashboard" element={<ProtectedRoute><DashboardLayout /></ProtectedRoute>}>
               <Route index element={<DashboardPage />} />
               
               {/* Member Management Routes */}
