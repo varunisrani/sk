@@ -1,5 +1,5 @@
-import { useState } from "react";
-import { Outlet, useNavigate } from "react-router-dom";
+import { useEffect, useState } from "react";
+import { Outlet, useNavigate, useLocation } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
@@ -32,6 +32,7 @@ import { useIsStaff } from "@/hooks/useRoles";
 const DashboardLayout = () => {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const navigate = useNavigate();
+  const location = useLocation();
   const { toast } = useToast();
   const { signOut, user: authUser } = useAuth();
   const { data: profile } = useProfile();
@@ -48,7 +49,7 @@ const DashboardLayout = () => {
   };
 
   const navigationItems = [
-    { icon: Home, label: "Dashboard", href: "/dashboard" },
+    ...(isStaff ? [{ icon: Home, label: "Dashboard", href: "/dashboard" }] : []),
     { icon: Users, label: "Members", href: "/dashboard/members" },
     { icon: MessageSquare, label: "Communications", href: "/dashboard/communications" },
     ...(isStaff
@@ -60,6 +61,12 @@ const DashboardLayout = () => {
         ]
       : []),
   ];
+
+  useEffect(() => {
+    if (!isStaff && location.pathname === '/dashboard') {
+      navigate('/dashboard/communications', { replace: true });
+    }
+  }, [isStaff, location.pathname, navigate]);
 
   const handleLogout = async () => {
     try {

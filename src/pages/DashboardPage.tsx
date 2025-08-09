@@ -7,6 +7,7 @@ import { useProfile } from "@/hooks/useProfile";
 import { useUserChurches } from "@/hooks/useChurch";
 import { useDashboardAnalytics } from "@/hooks/useAnalytics";
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, PieChart, Pie, Cell, LineChart, Line, CartesianGrid, Legend } from "recharts";
+import { useIsStaff } from "@/hooks/useRoles";
 
 const DashboardPage = () => {
   const { user: authUser } = useAuth();
@@ -146,6 +147,27 @@ const DashboardPage = () => {
       icon: AlertCircle
     }
   ];
+
+  const isStaff = useIsStaff();
+  if (!isStaff) {
+    return (
+      <div className="space-y-6">
+        <div className="bg-gradient-to-r from-primary/10 to-church-blue/10 rounded-lg p-6">
+          <h1 className="text-2xl font-bold text-foreground mb-2">Access Restricted</h1>
+          <p className="text-muted-foreground">This dashboard is available to church staff (admin, pastor, staff). You can still view church announcements.</p>
+        </div>
+        <Card>
+          <CardHeader>
+            <CardTitle>Announcements</CardTitle>
+            <CardDescription>Visit Communications to view the latest updates from your church.</CardDescription>
+          </CardHeader>
+          <CardContent>
+            <Button onClick={() => (window.location.href = '/dashboard/communications')}>Go to Communications</Button>
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-6">
