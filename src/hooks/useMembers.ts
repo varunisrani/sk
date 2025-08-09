@@ -192,11 +192,9 @@ export const useCreateMember = () => {
 
 export const useUpdateMember = () => {
   const queryClient = useQueryClient();
-  const { user } = useAuth();
 
   return useMutation({
     mutationFn: async ({ memberId, memberData }: { memberId: string; memberData: Partial<MemberFormData> }) => {
-      if (!user?.id) throw new Error('User not authenticated');
 
       const updateData: any = {};
       
