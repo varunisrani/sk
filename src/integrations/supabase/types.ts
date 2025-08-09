@@ -123,7 +123,7 @@ export type Database = {
           attachments: string[] | null
           comment_text: string
           comment_type: Database["public"]["Enums"]["comment_type"]
-          commenter_id: string
+          commenter_id: string | null
           created_at: string | null
           id: string
           is_internal: boolean | null
@@ -133,7 +133,7 @@ export type Database = {
           attachments?: string[] | null
           comment_text: string
           comment_type: Database["public"]["Enums"]["comment_type"]
-          commenter_id: string
+          commenter_id?: string | null
           created_at?: string | null
           id?: string
           is_internal?: boolean | null
@@ -143,7 +143,7 @@ export type Database = {
           attachments?: string[] | null
           comment_text?: string
           comment_type?: Database["public"]["Enums"]["comment_type"]
-          commenter_id?: string
+          commenter_id?: string | null
           created_at?: string | null
           id?: string
           is_internal?: boolean | null

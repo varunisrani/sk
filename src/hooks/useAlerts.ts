@@ -100,10 +100,10 @@ export const useAlertComments = (alertId: string) => {
 export const useAddAlertComment = () => {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: async (payload: Omit<AlertComment, 'id' | 'created_at'>) => {
+    mutationFn: async (payload: { alert_id: string; comment_text: string; comment_type: 'update' | 'question' | 'resolution' | 'escalation'; is_internal?: boolean; attachments?: string[]; commenter_id?: string | null }) => {
       const { data, error } = await supabase
         .from('alert_comments')
-        .insert(payload)
+        .insert({ ...payload, commenter_id: payload.commenter_id ?? null } as any)
         .select()
         .single();
       if (error) throw error;

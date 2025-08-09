@@ -16,6 +16,8 @@ import CreateMemberPage from "./pages/CreateMemberPage";
 import MemberProfilePage from "./pages/MemberProfilePage";
 import EditMemberPage from "./pages/EditMemberPage";
 import BulkImportPage from "./pages/BulkImportPage";
+import AlertsPage from "./pages/AlertsPage";
+import AlertDetailPage from "./pages/AlertDetailPage";
 
 const queryClient = new QueryClient();
 
@@ -43,8 +45,11 @@ const App = () => (
               <Route path="members/:id" element={<MemberProfilePage />} />
               <Route path="members/:id/edit" element={<EditMemberPage />} />
               
+              {/* Pastoral Alerts */}
+              <Route path="alerts" element={<AlertsPage />} />
+              <Route path="alerts/:id" element={<AlertDetailPage />} />
+              
               {/* Placeholder routes for future features */}
-              <Route path="alerts" element={<div className="p-6 text-center text-muted-foreground">Pastoral Alerts page coming soon...</div>} />
               <Route path="analytics" element={<div className="p-6 text-center text-muted-foreground">Analytics page coming soon...</div>} />
               <Route path="communications" element={<div className="p-6 text-center text-muted-foreground">Communications page coming soon...</div>} />
               <Route path="ministry" element={<div className="p-6 text-center text-muted-foreground">Ministry Support page coming soon...</div>} />
