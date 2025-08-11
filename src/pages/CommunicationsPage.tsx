@@ -11,12 +11,16 @@ import { useAnnouncements, useCreateAnnouncement, useIncrementAnnouncementView, 
 import { Announcement, AnnouncementCategory, AnnouncementFormData } from '@/types/announcement';
 import { Calendar } from '@/components/ui/calendar';
 import { format } from 'date-fns';
-import { Loader2, Plus, Eye } from 'lucide-react';
+import { Loader2, Plus, Eye, MessageSquareMore } from 'lucide-react';
 import ReactQuill from 'react-quill';
 import 'react-quill/dist/quill.snow.css';
 import { useIsStaff } from '@/hooks/useRoles';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import FirstSetupCard from '@/components/auth/FirstSetupCard';
+import AICommunicationDialog from '@/components/ui/AICommunicationDialog';
+import AIMilestoneAlert from '@/components/ui/AIMilestoneAlert';
+import AIPastorAlert from '@/components/ui/AIPastorAlert';
+import BasicDisengagementDetector from '@/components/ui/BasicDisengagementDetector';
 
 const categoryLabels: Record<AnnouncementCategory, string> = {
   general: 'General',
@@ -177,6 +181,12 @@ const CommunicationsPage = () => {
         <p className="text-sm text-muted-foreground">{isStaff ? 'Create and manage announcements for your church community.' : 'View announcements from your church community.'}</p>
       </header>
 
+      <section className="mb-6 space-y-4">
+        <AIMilestoneAlert />
+        <AIPastorAlert />
+        {isStaff && <BasicDisengagementDetector />}
+      </section>
+
       {isStaff ? (
         <>
           <section className="flex items-center justify-between mb-4">
@@ -205,7 +215,18 @@ const CommunicationsPage = () => {
                 </Select>
               </div>
             </div>
-            {isStaff && <NewAnnouncementDialog onCreated={() => refetch()} />}
+            {isStaff && (
+              <div className="flex gap-2">
+                <NewAnnouncementDialog onCreated={() => refetch()} />
+                <AICommunicationDialog
+                  trigger={
+                    <Button size="sm">
+                      <MessageSquareMore className="h-4 w-4 mr-2" /> AI Communication
+                    </Button>
+                  }
+                />
+              </div>
+            )}
           </section>
 
           <section>
@@ -226,13 +247,13 @@ const CommunicationsPage = () => {
                       <div className="flex items-start justify-between gap-2">
                         <div>
                           <CardTitle className="text-base">{a.title}</CardTitle>
-                          <CardDescription>
+                          <div className="text-sm text-muted-foreground">
                             <div className="flex gap-2 items-center">
                               <Badge variant={typeBadgeVariant(a.category)}>{categoryLabels[a.category]}</Badge>
                               <span>•</span>
                               <span>{a.publish_date ? format(new Date(a.publish_date), 'PPP') : 'No date'}</span>
                             </div>
-                          </CardDescription>
+                          </div>
                         </div>
                         <Badge variant={a.active ? 'default' : 'outline'}>{a.active ? 'Active' : 'Inactive'}</Badge>
                       </div>
@@ -304,13 +325,13 @@ const CommunicationsPage = () => {
                         <div className="flex items-start justify-between gap-2">
                           <div>
                             <CardTitle className="text-base">{a.title}</CardTitle>
-                            <CardDescription>
+                            <div className="text-sm text-muted-foreground">
                               <div className="flex gap-2 items-center">
                                 <Badge variant={typeBadgeVariant(a.category)}>{categoryLabels[a.category]}</Badge>
                                 <span>•</span>
                                 <span>{a.publish_date ? format(new Date(a.publish_date), 'PPP') : 'No date'}</span>
                               </div>
-                            </CardDescription>
+                            </div>
                           </div>
                           <Badge variant={a.active ? 'default' : 'outline'}>{a.active ? 'Active' : 'Inactive'}</Badge>
                         </div>
