@@ -94,34 +94,57 @@ const AIPastorAlert = () => {
     return () => clearInterval(interval);
   }, []);
 
-  const formatAlertContent = (alert: AlertResponse) => {
+  const parseAlertData = (alert: AlertResponse) => {
     // Handle error responses
     if (alert.error) {
-      return alert.message || 'Unknown error occurred';
+      return { type: 'error', message: alert.message || 'Unknown error occurred' };
     }
     
     // Handle webhook responses with code and message
     if (alert.code && alert.message) {
-      let content = `Status: ${alert.code}\nMessage: ${alert.message}`;
-      if (alert.hint) {
-        content += `\n\nHint: ${alert.hint}`;
-      }
-      return content;
+      return {
+        type: 'webhook_response',
+        status: alert.code,
+        message: alert.message,
+        hint: alert.hint
+      };
     }
     
-    // Handle output field
+    // Handle output field - try to extract pastor guidance data
     if (alert.output) {
-      return typeof alert.output === 'string' ? alert.output : JSON.stringify(alert.output, null, 2);
+      try {
+        // Navigate through nested object structure to find actual output
+        let data = alert.output;
+        
+        // Handle nested object structure like "[object Object]": { "[object Object]": ... }
+        while (data && typeof data === 'object' && !Array.isArray(data)) {
+          const keys = Object.keys(data);
+          if (keys.length === 1 && keys[0].includes('object Object')) {
+            data = data[keys[0]];
+          } else if (data.output && Array.isArray(data.output)) {
+            data = data.output;
+            break;
+          } else {
+            break;
+          }
+        }
+        
+        if (Array.isArray(data)) {
+          return { type: 'guidance_list', guidance: data };
+        }
+        
+        return { type: 'unknown', data: typeof alert.output === 'string' ? alert.output : alert.output };
+      } catch (e) {
+        return { type: 'unknown', data: alert.output };
+      }
     }
     
     // Handle direct message
     if (alert.message) {
-      return alert.message;
+      return { type: 'message', message: alert.message };
     }
     
-    // Fallback - show all data
-    const { timestamp, apiResponse, error, ...cleanAlert } = alert;
-    return Object.keys(cleanAlert).length > 0 ? JSON.stringify(cleanAlert, null, 2) : 'New pastor guidance received';
+    return { type: 'empty', message: 'New pastor guidance received' };
   };
 
   const getAlertVariant = (alert: AlertResponse) => {
@@ -132,11 +155,107 @@ const AIPastorAlert = () => {
   };
 
   const getAlertTitle = (alert: AlertResponse) => {
-    if (alert.error) return 'API Error';
+    const parsed = parseAlertData(alert);
+    if (parsed.type === 'error') return 'API Error';
     if (alert.code === 404) return 'Webhook Not Active';
     if (alert.code && alert.code >= 400) return 'Webhook Error';
-    if (alert.output) return 'Pastor Guidance';
+    if (parsed.type === 'guidance_list') return 'Pastor Guidance';
     return 'Pastor Message';
+  };
+
+  const getPriorityColor = (priority: number) => {
+    if (priority <= 3) return 'bg-red-100 text-red-800 border-red-200';
+    if (priority <= 6) return 'bg-yellow-100 text-yellow-800 border-yellow-200';
+    return 'bg-green-100 text-green-800 border-green-200';
+  };
+
+  const getPriorityLabel = (priority: number) => {
+    if (priority <= 3) return 'High Priority';
+    if (priority <= 6) return 'Medium Priority';
+    return 'Low Priority';
+  };
+
+  const renderAlertContent = (alert: AlertResponse) => {
+    const parsed = parseAlertData(alert);
+    
+    switch (parsed.type) {
+      case 'error':
+        return (
+          <div className="text-sm text-red-600">
+            {parsed.message}
+          </div>
+        );
+      
+      case 'webhook_response':
+        return (
+          <div className="text-sm space-y-2">
+            <div><span className="font-medium">Status:</span> {parsed.status}</div>
+            <div><span className="font-medium">Message:</span> {parsed.message}</div>
+            {parsed.hint && <div><span className="font-medium">Hint:</span> {parsed.hint}</div>}
+          </div>
+        );
+      
+      case 'guidance_list':
+        return (
+          <div className="space-y-3">
+            {parsed.guidance.map((item: any, idx: number) => (
+              <div key={idx} className={`border rounded-lg p-4 ${getPriorityColor(item.priority)}`}>
+                <div className="flex items-start justify-between mb-2">
+                  <div className="flex-1">
+                    <h4 className="font-semibold text-gray-900 mb-1">{item.title || 'System Message'}</h4>
+                    {item.member_name && item.member_name !== 'System Status' && (
+                      <div className="text-sm font-medium text-gray-700">For: {item.member_name}</div>
+                    )}
+                  </div>
+                  <Badge 
+                    variant="outline"
+                    className={`text-xs ${getPriorityColor(item.priority)}`}
+                  >
+                    {getPriorityLabel(item.priority)}
+                  </Badge>
+                </div>
+                
+                <div className="text-sm text-gray-700 space-y-2">
+                  {item.description && (
+                    <div className="leading-relaxed">{item.description}</div>
+                  )}
+                  
+                  {item.type && (
+                    <div className="text-xs text-gray-500">
+                      <span className="font-medium">Type:</span> {item.type.replace('_', ' ').toUpperCase()}
+                    </div>
+                  )}
+                  
+                  {item.due_date && (
+                    <div className="text-xs text-gray-500">
+                      <span className="font-medium">Due:</span> {format(new Date(item.due_date), 'PPP')}
+                    </div>
+                  )}
+                  
+                  {item.language && (
+                    <div className="text-xs text-gray-500">
+                      <span className="font-medium">Language:</span> {item.language.toUpperCase()}
+                    </div>
+                  )}
+                </div>
+              </div>
+            ))}
+          </div>
+        );
+      
+      case 'message':
+        return <div className="text-sm">{parsed.message}</div>;
+      
+      case 'unknown':
+        return (
+          <pre className="whitespace-pre-wrap font-sans bg-gray-50 p-3 rounded border text-gray-700 text-xs leading-relaxed overflow-x-auto">
+            {typeof parsed.data === 'string' ? parsed.data : JSON.stringify(parsed.data, null, 2)}
+          </pre>
+        );
+      
+      default:
+        return <div className="text-sm text-gray-500">{parsed.message}</div>;
+    }
   };
 
   const hasNewAlerts = alerts.length > 0;
@@ -230,10 +349,8 @@ const AIPastorAlert = () => {
                     </span>
                   )}
                 </div>
-                <div className="text-sm">
-                  <pre className="whitespace-pre-wrap font-sans bg-white p-3 rounded border text-gray-700 text-xs leading-relaxed">
-                    {formatAlertContent(alert)}
-                  </pre>
+                <div>
+                  {renderAlertContent(alert)}
                 </div>
               </div>
             ))}

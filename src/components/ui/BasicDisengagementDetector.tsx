@@ -95,43 +95,53 @@ const BasicDisengagementDetector = () => {
     return () => clearInterval(interval);
   }, []);
 
-  const formatDetectionContent = (detection: DetectorResponse) => {
+  const parseDetectionData = (detection: DetectorResponse) => {
     // Handle error responses
     if (detection.error) {
-      return detection.message || 'Unknown error occurred';
+      return { type: 'error', message: detection.message || 'Unknown error occurred' };
     }
     
     // Handle webhook responses with code and message
     if (detection.code && detection.message) {
-      let content = `Status: ${detection.code}\nMessage: ${detection.message}`;
-      if (detection.hint) {
-        content += `\n\nHint: ${detection.hint}`;
-      }
-      return content;
+      return {
+        type: 'webhook_response',
+        status: detection.code,
+        message: detection.message,
+        hint: detection.hint
+      };
     }
     
     // Handle disengaged members list
     if (detection.disengagedMembers && Array.isArray(detection.disengagedMembers)) {
-      return `Found ${detection.disengagedMembers.length} potentially disengaged member(s):\n\n${
-        detection.disengagedMembers.map((member: any, index: number) => 
-          `${index + 1}. ${member.name || 'Unknown'} - Last seen: ${member.lastSeen || 'Unknown'}`
-        ).join('\n')
-      }`;
+      return { type: 'disengaged_list', members: detection.disengagedMembers };
     }
     
-    // Handle output field
-    if (detection.output) {
-      return typeof detection.output === 'string' ? detection.output : JSON.stringify(detection.output, null, 2);
+    // Handle output field - check if it's a single detection result
+    if (detection.output || detection.member_id) {
+      try {
+        // If it's a direct detection result object
+        if (detection.member_id && detection.type) {
+          return { type: 'detection_result', result: detection };
+        }
+        
+        // Handle nested output structure
+        let data = detection.output;
+        if (typeof data === 'string') {
+          return { type: 'message', message: data };
+        }
+        
+        return { type: 'unknown', data: detection.output };
+      } catch (e) {
+        return { type: 'unknown', data: detection.output };
+      }
     }
     
     // Handle direct message
     if (detection.message) {
-      return detection.message;
+      return { type: 'message', message: detection.message };
     }
     
-    // Fallback - show all data
-    const { timestamp, apiResponse, error, ...cleanDetection } = detection;
-    return Object.keys(cleanDetection).length > 0 ? JSON.stringify(cleanDetection, null, 2) : 'Disengagement check completed';
+    return { type: 'empty', message: 'Disengagement check completed' };
   };
 
   const getDetectionVariant = (detection: DetectorResponse) => {
@@ -143,12 +153,121 @@ const BasicDisengagementDetector = () => {
   };
 
   const getDetectionTitle = (detection: DetectorResponse) => {
-    if (detection.error) return 'API Error';
+    const parsed = parseDetectionData(detection);
+    if (parsed.type === 'error') return 'API Error';
     if (detection.code === 404) return 'Webhook Not Active';
     if (detection.code && detection.code >= 400) return 'Webhook Error';
-    if (detection.disengagedMembers && detection.disengagedMembers.length > 0) return 'Members Need Attention';
-    if (detection.output) return 'Detection Results';
+    if (parsed.type === 'disengaged_list') return 'Members Need Attention';
+    if (parsed.type === 'detection_result') return 'Detection Results';
     return 'Engagement Status';
+  };
+
+  const getPriorityColor = (priority: number) => {
+    if (priority <= 3) return 'bg-red-100 text-red-800 border-red-200';
+    if (priority <= 6) return 'bg-yellow-100 text-yellow-800 border-yellow-200';
+    return 'bg-green-100 text-green-800 border-green-200';
+  };
+
+  const renderDetectionContent = (detection: DetectorResponse) => {
+    const parsed = parseDetectionData(detection);
+    
+    switch (parsed.type) {
+      case 'error':
+        return (
+          <div className="text-sm text-red-600">
+            {parsed.message}
+          </div>
+        );
+      
+      case 'webhook_response':
+        return (
+          <div className="text-sm space-y-2">
+            <div><span className="font-medium">Status:</span> {parsed.status}</div>
+            <div><span className="font-medium">Message:</span> {parsed.message}</div>
+            {parsed.hint && <div><span className="font-medium">Hint:</span> {parsed.hint}</div>}
+          </div>
+        );
+      
+      case 'disengaged_list':
+        return (
+          <div className="space-y-3">
+            <div className="text-sm font-medium text-red-800">
+              Found {parsed.members.length} potentially disengaged member(s):
+            </div>
+            {parsed.members.map((member: any, idx: number) => (
+              <div key={idx} className="bg-white border border-red-200 rounded-lg p-4">
+                <div className="flex items-center justify-between mb-2">
+                  <h4 className="font-semibold text-gray-900">{member.name || 'Unknown Member'}</h4>
+                  <Badge variant="destructive" className="text-xs">
+                    Needs Attention
+                  </Badge>
+                </div>
+                <div className="text-sm text-gray-600">
+                  <div>Last seen: {member.lastSeen || 'Unknown'}</div>
+                  {member.daysAbsent && (
+                    <div className="text-xs text-red-600 mt-1">
+                      {member.daysAbsent} days absent
+                    </div>
+                  )}
+                </div>
+              </div>
+            ))}
+          </div>
+        );
+      
+      case 'detection_result':
+        const result = parsed.result;
+        return (
+          <div className={`border rounded-lg p-4 ${getPriorityColor(result.priority)}`}>
+            <div className="flex items-start justify-between mb-2">
+              <div>
+                <h4 className="font-semibold text-gray-900">{result.member_name || 'System Status'}</h4>
+                {result.label && (
+                  <div className="text-sm font-medium text-gray-700">{result.label}</div>
+                )}
+              </div>
+              {result.priority && (
+                <Badge variant="outline" className={`text-xs ${getPriorityColor(result.priority)}`}>
+                  Priority: {result.priority}
+                </Badge>
+              )}
+            </div>
+            
+            <div className="text-sm text-gray-700 space-y-1">
+              {result.type && (
+                <div className="text-xs text-gray-500">
+                  <span className="font-medium">Type:</span> {result.type.replace('_', ' ').toUpperCase()}
+                </div>
+              )}
+              
+              {result.due_date && (
+                <div className="text-xs text-gray-500">
+                  <span className="font-medium">Due:</span> {format(new Date(result.due_date), 'PPP')}
+                </div>
+              )}
+              
+              {result.idempotency_key && (
+                <div className="text-xs text-gray-400">
+                  ID: {result.idempotency_key}
+                </div>
+              )}
+            </div>
+          </div>
+        );
+      
+      case 'message':
+        return <div className="text-sm">{parsed.message}</div>;
+      
+      case 'unknown':
+        return (
+          <pre className="whitespace-pre-wrap font-sans bg-gray-50 p-3 rounded border text-gray-700 text-xs leading-relaxed overflow-x-auto">
+            {typeof parsed.data === 'string' ? parsed.data : JSON.stringify(parsed.data, null, 2)}
+          </pre>
+        );
+      
+      default:
+        return <div className="text-sm text-gray-500">{parsed.message}</div>;
+    }
   };
 
   const hasNewDetections = detections.length > 0;
@@ -244,10 +363,8 @@ const BasicDisengagementDetector = () => {
                     </span>
                   )}
                 </div>
-                <div className="text-sm">
-                  <pre className="whitespace-pre-wrap font-sans bg-white p-3 rounded border text-gray-700 text-xs leading-relaxed">
-                    {formatDetectionContent(detection)}
-                  </pre>
+                <div>
+                  {renderDetectionContent(detection)}
                 </div>
               </div>
             ))}
